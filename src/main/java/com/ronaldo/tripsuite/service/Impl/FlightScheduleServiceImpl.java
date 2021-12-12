@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import java.sql.Date;
 import java.sql.Time;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class FlightScheduleServiceImpl implements FlightScheduleService {
 
@@ -31,17 +33,32 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
     }
 
     @Override
-    public List<FlightSchedule> findFlights(String departureCity, Date date) {
+    public List<FlightScheduleDto> findFlights(Optional<String> departureCity, Optional<String> arrivalCity, Optional<Date> date) {
 
-        if(departureCity != null & date != null) {
-            return flightScheduleRepository.findByDepartureCityAndDate(departureCity, date);
-        } else if (departureCity != null) {
-            Date currentDate = new Date(System.currentTimeMillis());
-            return flightScheduleRepository.findByDepartureCityAndDate(departureCity, currentDate);
+        Date currentDate = new Date(System.currentTimeMillis());
+        List<FlightSchedule> foundFlights;
+
+        if (date.isPresent() && date.get().before(currentDate)) {
+            throw new IllegalArgumentException();
         }
 
-        return flightScheduleRepository.findAll();
+        if (departureCity.isPresent() && arrivalCity.isPresent() && date.isPresent()) {
+            foundFlights = flightScheduleRepository
+                    .findByDepartureAndArrivalCityAndDate(departureCity.get(), arrivalCity.get(), date.get());
+        } else if (departureCity.isPresent() && arrivalCity.isPresent()) {
+            foundFlights = flightScheduleRepository
+                    .findByDepartureAndArrivalCityAndDate(departureCity.get(), arrivalCity.get(), currentDate);
+        } else if (departureCity.isPresent() && date.isPresent()) {
+            foundFlights = flightScheduleRepository
+                    .findByDepartureCityAndDate(departureCity.get(), date.get());
+        } else if (departureCity.isPresent()) {
+            foundFlights = flightScheduleRepository
+                    .findByDepartureCityAndDate(departureCity.get(), currentDate);
+        } else {
+            foundFlights = flightScheduleRepository.findFlightsAfterCurrentDate(currentDate);
+        }
 
+        return flightScheduleMapper.flightScheduleToDtoList(foundFlights);
     }
 
     @Override

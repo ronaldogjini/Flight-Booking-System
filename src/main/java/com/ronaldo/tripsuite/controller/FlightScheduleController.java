@@ -4,6 +4,10 @@ import com.ronaldo.tripsuite.dto.FlightScheduleDto;
 import com.ronaldo.tripsuite.entity.FlightSchedule;
 import com.ronaldo.tripsuite.service.FlightScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
@@ -13,24 +17,22 @@ import java.util.Optional;
 @RestController
 public class FlightScheduleController {
 
-    //TODO: Convert all FlightSchedule to FlightScheduleDTO
-
     @Autowired
     private FlightScheduleService flightScheduleService;
 
+    @PreAuthorize("hasRole('Admin')")
     @PostMapping({"/flightschedules"})
-    public FlightScheduleDto insertFlightSchedule(@RequestBody FlightScheduleDto flightScheduleDto) {
-        return flightScheduleService.saveFlightSchedule(flightScheduleDto);
+    public ResponseEntity<FlightScheduleDto> saveFlightSchedule(@RequestBody FlightScheduleDto flightScheduleDto) {
+        FlightScheduleDto savedFlightSchedule = flightScheduleService.saveFlightSchedule(flightScheduleDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedFlightSchedule);
     }
 
     @GetMapping({"/flightschedules"})
-    public List<FlightSchedule> findAll() {
-        return flightScheduleService.findAll();
-    }
+    public ResponseEntity<List<FlightScheduleDto>> searchFlights(@RequestParam Optional<String> departureCity,
+                                                                 @RequestParam Optional<String> arrivalCity,
+                                                                 @RequestParam Optional<Date> departureDate) {
 
-    @GetMapping({"/flightschedules/search"})
-    public List<FlightSchedule> searchFlights(@RequestParam(required = false) String departureCity,
-                                              @RequestParam(required = false) Date date) {
-        return flightScheduleService.findFlights(departureCity, date);
+        List<FlightScheduleDto> foundFlights = flightScheduleService.findFlights(departureCity, arrivalCity, departureDate);
+        return ResponseEntity.ok().body(foundFlights);
     }
 }

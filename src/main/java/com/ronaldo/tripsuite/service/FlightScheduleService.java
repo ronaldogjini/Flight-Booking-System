@@ -12,7 +12,7 @@ public interface FlightScheduleService {
 
     List<FlightSchedule> findAll();
 
-    List<FlightSchedule> findFlights(String departureCity, Date date);
+    List<FlightScheduleDto> findFlights(Optional<String> departureCity, Optional<String> arrivalCity, Optional<Date> date);
 
     FlightScheduleDto saveFlightSchedule(FlightScheduleDto flightSchedule);
 }

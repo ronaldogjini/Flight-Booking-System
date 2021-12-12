@@ -11,6 +11,8 @@ import com.ronaldo.tripsuite.mapper.TripMapper;
 import com.ronaldo.tripsuite.service.TripService;
 import com.ronaldo.tripsuite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,40 +23,48 @@ public class TripController {
 
     @Autowired
     private TripService tripService;
-    
+
     @GetMapping({"/users/{userId}/trips"})
-    public List<TripDto> filterTrips(@PathVariable Long userId, @RequestParam Optional<TripReason> reason, @RequestParam Optional<TripStatus> status) {
-        return tripService.filterTrips(userId, reason, status);
+    public ResponseEntity<List<TripDto>> filterTrips(@PathVariable Long userId, @RequestParam Optional<TripReason> reason, @RequestParam Optional<TripStatus> status) {
+        List<TripDto> filteredTrips = tripService.filterTrips(userId, reason, status);
+        return ResponseEntity.ok().body(filteredTrips);
     }
 
     @GetMapping({"/users/{userId}/trip/{tripId}"})
-    public TripDto getTrip(@PathVariable Long userId, @PathVariable Long tripId) {
-        return tripService.findById(userId, tripId);
+    public ResponseEntity<TripDto> getTrip(@PathVariable Long userId, @PathVariable Long tripId) {
+        TripDto retrievedTrip = tripService.findById(userId, tripId);
+        return ResponseEntity.ok().body(retrievedTrip);
     }
 
     @PostMapping({"/trips"})
-    public TripDto saveTrip(@RequestBody TripDto tripDto) {
-        return tripService.save(tripDto);
+    public ResponseEntity<TripDto> saveTrip(@RequestBody TripDto tripDto) {
+        TripDto savedTrip = tripService.save(tripDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedTrip);
+
     }
 
     @PutMapping({"/trips"})
-    public TripDto updateTripDetails(@RequestBody TripDto tripDto) {
-        return tripService.updateDetails(tripDto);
+    public ResponseEntity<TripDto> updateTripDetails(@RequestBody TripDto tripDto) {
+        TripDto updatedTrip = tripService.updateDetails(tripDto);
+        return ResponseEntity.ok().body(updatedTrip);
     }
 
 
     // change status of the flight (CREATED -> WAITING_FOR_APPROVAL -> CONFIRMED/DELETED)
     @PatchMapping({"/trips/status"})
-    public TripDto changeStatus(@RequestBody TripDto tripDto) {
-        return tripService.changeStatus(tripDto);
+    public ResponseEntity<TripDto> changeStatus(@RequestBody TripDto tripDto) {
+        TripDto updatedTrip = tripService.changeStatus(tripDto);
+        return ResponseEntity.ok().body(updatedTrip);
     }
 
 
     @PostMapping({"/trips/flights"})
-    public TripDto bookFlight(@RequestBody BookFlightRequestDto bookFlightRequestDto) {
+    public ResponseEntity<TripDto> bookFlight(@RequestBody BookFlightRequestDto bookFlightRequestDto) {
         Long tripId = bookFlightRequestDto.getTripId();
         Long flightId = bookFlightRequestDto.getFlightId();
 
-        return tripService.bookFlight(tripId, flightId);
+        TripDto tripWithFlights = tripService.bookFlight(tripId, flightId);
+        return ResponseEntity.ok().body(tripWithFlights);
+
     }
 }

@@ -14,11 +14,14 @@ import com.ronaldo.tripsuite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.client.HttpClientErrorException;
 
 import javax.swing.text.html.Option;
+import java.nio.file.AccessDeniedException;
 import java.sql.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -40,17 +43,15 @@ public class TripServiceImpl implements TripService {
     public TripDto findById(Long userId, Long tripId) {
         Optional<Trip> trip = tripRepository.findById(tripId);
 
-        if (!trip.isPresent()) {
-            System.out.println("Not found");
-            return null;
+        if (trip.isEmpty()) {
+            throw new NoSuchElementException();
         }
 
         Trip existingTrip = trip.get();
 
         if (!userId.equals(jwtUtil.getLoggedInUser().getId()) ||
                 !existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
-            System.out.println("Not authorized!");
-            return null;
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
         }
 
         return tripMapper.tripToDto(existingTrip);
@@ -70,7 +71,6 @@ public class TripServiceImpl implements TripService {
         Date departureDate = newTrip.getDepartureDate();
 
         if (arrivalDate.before(departureDate)) {
-            System.out.println("Arrival date cannot be before departure date");
             throw new IllegalArgumentException();
         }
 
@@ -86,40 +86,35 @@ public class TripServiceImpl implements TripService {
         Optional<Trip> trip = tripRepository.findById(tripWithNewStatus.getId());
         Trip updatedTrip = null;
 
-        if (!trip.isPresent()) {
-            System.out.println("Trip Not Found");
-            return null;
+        if (trip.isEmpty()) {
+            throw new NoSuchElementException();
         }
 
         Trip existingTrip = trip.get();
 
         if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
-            System.out.println("You are not authorized!");
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
         }
 
         TripStatus status = tripWithNewStatus.getStatus();
 
         switch (status) {
             case CREATED: {
-                System.out.println("Cannot change status to Created");
-                return null;
+                throw new IllegalArgumentException();
 
             }
             case WAITING_FOR_APPROVAL: {
-                existingTrip = sendTripForAdminApproval(existingTrip, status);
-                assert existingTrip != null;
+                sendTripForAdminApproval(existingTrip, status);
                 updatedTrip = tripRepository.save(existingTrip);
                 break;
             }
             case APPROVED: {
-                existingTrip = approveTrip(existingTrip, status);
-                assert existingTrip != null;
+                approveTrip(existingTrip, status);
                 updatedTrip = tripRepository.save(existingTrip);
                 break;
             }
             case REJECTED: {
-                existingTrip = rejectTrip(existingTrip, status);
-                assert existingTrip != null;
+                rejectTrip(existingTrip, status);
                 updatedTrip = tripRepository.save(existingTrip);
                 break;
             }
@@ -132,21 +127,18 @@ public class TripServiceImpl implements TripService {
         Optional<Trip> existingTripOptional = tripRepository.findById(updatedTripDto.getId());
         Trip existingTrip;
 
-        if (!existingTripOptional.isPresent()) {
-            System.out.println("Trip Not Found");
-            return null;
+        if (existingTripOptional.isEmpty()) {
+            throw new NoSuchElementException();
         }
 
         existingTrip = existingTripOptional.get();
 
         if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
-            System.out.println("Not authorized!");
-            return null;
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
         }
 
         if (existingTrip.getStatus() != TripStatus.CREATED) {
-            System.out.println("You can no longer update this trip!");
-            return null;
+            throw new IllegalArgumentException();
         }
 
         existingTrip.setArrivalDate(updatedTripDto.getArrivalDate());
@@ -162,24 +154,26 @@ public class TripServiceImpl implements TripService {
         Optional<Trip> existingTripOpt = tripRepository.findById(tripId);
         Optional<FlightSchedule> existingFlightOpt = flightScheduleRepository.findById(flightId);
 
-        if (!existingTripOpt.isPresent()) {
-            System.out.println("Trip does not exist");
-            return null;
+        if (existingTripOpt.isEmpty()) {
+            throw new NoSuchElementException();
         }
 
         Trip existingTrip = existingTripOpt.get();
 
         if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
-            System.out.println("Not authorized");
-            return null;
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
         }
 
-        if (!existingFlightOpt.isPresent()) {
-            System.out.println("Flight does not exist");
-            return null;
+        if (existingFlightOpt.isEmpty()) {
+            throw new NoSuchElementException();
         }
 
         FlightSchedule existingFlight = existingFlightOpt.get();
+
+        if (existingFlight.getDepartureDate().before(existingFlight.getDepartureDate()) ||
+                existingFlight.getArrivalDate().after(existingFlight.getArrivalDate())) {
+            throw new IllegalArgumentException();
+        }
 
         existingTrip.getFlightSchedules().add(existingFlight);
         Trip savedTrip = tripRepository.save(existingTrip);
@@ -194,8 +188,7 @@ public class TripServiceImpl implements TripService {
         Long loggedUserId = jwtUtil.getLoggedInUser().getId();
 
         if (!userId.equals(loggedUserId)) {
-            System.out.println("Unauhtorized");
-            return null;
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
         }
 
         if (reason.isPresent() && status.isPresent()) {
@@ -211,20 +204,17 @@ public class TripServiceImpl implements TripService {
         return tripMapper.tripToDtoList(filteredTrips);
     }
 
-    private Trip sendTripForAdminApproval(Trip existingTrip, TripStatus status) {
+    private void sendTripForAdminApproval(Trip existingTrip, TripStatus status) {
         if (existingTrip.getStatus() == TripStatus.WAITING_FOR_APPROVAL && existingTrip.getStatus() == TripStatus.APPROVED) {
-            System.out.println("Cannot change status to Waiting for Approval");
-            return null;
+            throw new IllegalArgumentException();
         } else {
             existingTrip.setStatus(status);
-            return existingTrip;
         }
     }
 
-    private Trip approveTrip(Trip existingTrip, TripStatus status) {
+    private void approveTrip(Trip existingTrip, TripStatus status) {
         if (existingTrip.getStatus() == TripStatus.CREATED && existingTrip.getStatus() == TripStatus.APPROVED) {
-            System.out.println("Cannot change status to Approved");
-            return null;
+            throw new IllegalArgumentException();
         }
 
         if (!jwtUtil.loggedUserIsAdmin()) {
@@ -232,23 +222,20 @@ public class TripServiceImpl implements TripService {
         }
 
         existingTrip.setStatus(status);
-        return existingTrip;
 
     }
 
-    private Trip rejectTrip(Trip existingTrip, TripStatus status) {
+    private void rejectTrip(Trip existingTrip, TripStatus status) {
 
         if (!jwtUtil.loggedUserIsAdmin()) {
-            System.out.println("You do not have admin rights!");
-            return null;
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
+
         }
 
         if (existingTrip.getStatus() != TripStatus.WAITING_FOR_APPROVAL) {
-            System.out.println("The trip has not been sent for submission yet!");
-            return null;
+            throw new HttpClientErrorException(HttpStatus.UNPROCESSABLE_ENTITY);
         }
         existingTrip.setStatus(status);
-        return existingTrip;
     }
 
 }

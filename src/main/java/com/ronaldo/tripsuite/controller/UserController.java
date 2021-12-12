@@ -6,6 +6,8 @@ import com.ronaldo.tripsuite.mapper.UserMapper;
 import com.ronaldo.tripsuite.service.UserService;
 import com.ronaldo.tripsuite.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +25,10 @@ public class UserController {
     // as an admin, I create new users
     @PreAuthorize("hasRole('Admin')")
     @PostMapping({"/users"})
-    public UserDto registerNewUser(@RequestBody UserDto userDto) {
-        return userService.saveUser(userDto);
+    public ResponseEntity<UserDto> registerNewUser(@RequestBody UserDto userDto) {
+        UserDto savedUser = userService.saveUser(userDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
-    
+
 
 }

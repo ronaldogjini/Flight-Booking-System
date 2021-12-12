@@ -2,6 +2,7 @@ package com.ronaldo.tripsuite.service.Impl;
 
 import com.ronaldo.tripsuite.dto.JwtRequestDto;
 import com.ronaldo.tripsuite.dto.JwtResponseDto;
+import com.ronaldo.tripsuite.mapper.UserMapper;
 import com.ronaldo.tripsuite.util.JwtUtil;
 import com.ronaldo.tripsuite.repository.UserRepository;
 import com.ronaldo.tripsuite.entity.User;
@@ -21,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
-public class JwtService implements UserDetailsService {
+public class AuthService implements UserDetailsService {
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -32,19 +33,20 @@ public class JwtService implements UserDetailsService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private UserMapper userMapper;
+
     public JwtResponseDto createJwtToken(JwtRequestDto jwtRequestDto) throws Exception {
-        System.out.print(jwtRequestDto);
         String userName = jwtRequestDto.getUsername();
         String userPassword = jwtRequestDto.getPassword();
 
         authenticate(userName, userPassword);
 
         UserDetails userDetails = loadUserByUsername(userName);
-        System.out.println("bbbb" + userDetails.toString());
         String newGeneratedToken = jwtUtil.generateToken(userDetails);
 
         User user = userRepository.findByUsername(userName).get();
-        return new JwtResponseDto(user, newGeneratedToken);
+        return new JwtResponseDto(userMapper.userToDto(user), newGeneratedToken);
     }
 
     @Override
@@ -71,13 +73,8 @@ public class JwtService implements UserDetailsService {
     }
 
     private void authenticate(String userName, String userPassword) throws Exception {
-
         try {
-            System.out.println("aaaaaa before " + " " + userName + " " + userPassword);
-
-           Authentication a = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
-            System.out.println("aaaaaa after " + " " + userName + " " + userPassword);
-
+            Authentication a = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
         } catch (DisabledException e) {
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {

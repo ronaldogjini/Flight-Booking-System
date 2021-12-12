@@ -4,6 +4,9 @@ import com.ronaldo.tripsuite.dto.RoleDto;
 import com.ronaldo.tripsuite.entity.Role;
 import com.ronaldo.tripsuite.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +20,8 @@ public class RoleController {
 
     @PreAuthorize("hasRole('Admin')")
     @PostMapping({"/roles"})
-    public RoleDto saveRole(@RequestBody RoleDto roleDto) {
-        return roleService.saveRole(roleDto);
+    public ResponseEntity<RoleDto> saveRole(@RequestBody RoleDto roleDto) {
+        RoleDto savedRole = roleService.saveRole(roleDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedRole);
     }
 }

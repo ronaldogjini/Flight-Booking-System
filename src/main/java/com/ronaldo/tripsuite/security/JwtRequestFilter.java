@@ -1,6 +1,6 @@
 package com.ronaldo.tripsuite.security;
 
-import com.ronaldo.tripsuite.service.Impl.JwtService;
+import com.ronaldo.tripsuite.service.Impl.AuthService;
 import com.ronaldo.tripsuite.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private JwtService jwtService;
+    private AuthService authService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -49,7 +49,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            UserDetails userDetails = jwtService.loadUserByUsername(username);
+            UserDetails userDetails = authService.loadUserByUsername(username);
 
             if (jwtUtil.validateToken(jwtToken, userDetails)) {
 
