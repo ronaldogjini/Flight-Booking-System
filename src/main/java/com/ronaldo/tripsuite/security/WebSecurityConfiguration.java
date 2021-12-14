@@ -28,7 +28,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private JwtRequestFilter jwtRequestFilter;
 
     @Autowired
-    private UserDetailsService jwtService;
+    private UserDetailsService authService;
 
     @Bean
     @Override
@@ -40,7 +40,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors();
         httpSecurity.csrf().disable()
-                .authorizeRequests().antMatchers("/api/login", "/users").permitAll()
+                .authorizeRequests().antMatchers("/api/login", "api/users", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-resources/**",
+                "/v2/api-docs*", "/webjars/**", "/swaggerfox.js", "/swagger-ui/*").permitAll()
                 .antMatchers(HttpHeaders.ALLOW).permitAll()
                 .anyRequest().authenticated()
                 .and()
@@ -59,6 +60,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(jwtService).passwordEncoder(passwordEncoder());
+        authenticationManagerBuilder.userDetailsService(authService).passwordEncoder(passwordEncoder());
     }
 }

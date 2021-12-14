@@ -22,7 +22,7 @@ public class FlightSchedule {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="flight_id", referencedColumnName = "id")
+    @JoinColumn(name = "flight_id", referencedColumnName = "id")
     private Flight flight;
 
     @Column(name = "departure_date")
@@ -37,8 +37,7 @@ public class FlightSchedule {
     @Column(name = "arrival_time")
     private Time arrivalTime;
 
-//    @NotNull
     @ManyToOne
-    @JoinColumn(name="plane_id", referencedColumnName = "id")
+    @JoinColumn(name = "plane_id", referencedColumnName = "id")
     private Plane plane;
 }

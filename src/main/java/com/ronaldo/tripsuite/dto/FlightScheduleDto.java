@@ -6,16 +6,23 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.sql.Date;
 import java.sql.Time;
 
 @Getter
 @Setter
 public class FlightScheduleDto {
-        private Long flightId;
-        private Date departureDate;
-        private Date arrivalDate;
-        private Time departureTime;
-        private Time arrivalTime;
-        private String planeId;
+    @NotNull(message = "Flight ID cannot be null")
+    private Long flightId;
+    @NotNull(message = "Departure date cannot be null")
+    private Date departureDate;
+    @NotNull(message = "Arrival Date cannot be null")
+    private Date arrivalDate;
+    @NotNull(message = "Departure Time cannot be null")
+    private Time departureTime;
+    @NotNull(message = "Arrival Time cannot be null")
+    private Time arrivalTime;
+    @NotNull(message = "Plane ID cannot be null")
+    private String planeId;
 }

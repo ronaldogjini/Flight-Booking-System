@@ -9,6 +9,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
+import javax.validation.constraints.Null;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.NoSuchElementException;
 
@@ -17,6 +18,11 @@ public class ExceptionHandlerGlobal {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity handleIllegalArgs() {
+        return ResponseEntity.badRequest().body("Bad request");
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity handleNull() {
         return ResponseEntity.badRequest().body("Bad request");
     }
 
@@ -48,6 +54,6 @@ public class ExceptionHandlerGlobal {
     public ResponseEntity handleUniqueFields() {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorMessageDto("Existing content with the same fields"));
     }
-
+    
 
 }
