@@ -10,13 +10,13 @@ import java.util.Optional;
 
 public interface TripService {
 
-    TripDto findById(Long userId, Long tripId);
+    TripDto findUserTripById(Long userId, Long tripId);
 
     List<Trip> findAll();
 
     TripDto save(TripDto trip);
 
-    void deleteTrip(Long id);
+    void softDelete(Long id);
 
     TripDto changeStatus(TripDto trip);
 
@@ -24,5 +24,5 @@ public interface TripService {
 
     TripDto bookFlight(Long tripId, Long flightId);
 
-    List<TripDto> filterTrips(Long id, Optional<TripReason> reason, Optional<TripStatus> status);
+    List<TripDto> findUserTrips(Long id, Optional<TripReason> reason, Optional<TripStatus> status);
 }

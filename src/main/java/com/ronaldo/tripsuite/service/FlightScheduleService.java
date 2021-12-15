@@ -12,6 +12,8 @@ public interface FlightScheduleService {
 
     List<FlightSchedule> findAll();
 
+    FlightSchedule getById(Long id);
+
     List<FlightScheduleDto> searchFlightSchedules(Optional<String> departureCity, Optional<String> arrivalCity, Optional<Date> date);
 
     FlightScheduleDto saveFlightSchedule(FlightScheduleDto flightSchedule);

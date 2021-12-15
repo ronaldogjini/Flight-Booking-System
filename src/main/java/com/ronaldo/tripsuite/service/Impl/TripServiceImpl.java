@@ -1,6 +1,7 @@
 package com.ronaldo.tripsuite.service.Impl;
 
 import com.ronaldo.tripsuite.dto.TripDto;
+import com.ronaldo.tripsuite.entity.Flight;
 import com.ronaldo.tripsuite.entity.FlightSchedule;
 import com.ronaldo.tripsuite.entity.Trip;
 import com.ronaldo.tripsuite.enums.TripReason;
@@ -8,6 +9,7 @@ import com.ronaldo.tripsuite.enums.TripStatus;
 import com.ronaldo.tripsuite.mapper.TripMapper;
 import com.ronaldo.tripsuite.repository.FlightScheduleRepository;
 import com.ronaldo.tripsuite.repository.TripRepository;
+import com.ronaldo.tripsuite.service.FlightScheduleService;
 import com.ronaldo.tripsuite.service.TripService;
 import com.ronaldo.tripsuite.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +27,13 @@ import java.util.Optional;
 public class TripServiceImpl implements TripService {
 
     private final TripRepository tripRepository;
-    private final FlightScheduleRepository flightScheduleRepository;
+    private final FlightScheduleService flightScheduleService;
     private final TripMapper tripMapper;
     private final JwtUtil jwtUtil;
 
-    public TripServiceImpl(TripRepository tripRepository, FlightScheduleRepository flightScheduleRepository, TripMapper tripMapper, JwtUtil jwtUtil) {
+    public TripServiceImpl(TripRepository tripRepository, FlightScheduleRepository flightScheduleService, FlightScheduleService flightScheduleService1, TripMapper tripMapper, JwtUtil jwtUtil) {
         this.tripRepository = tripRepository;
-        this.flightScheduleRepository = flightScheduleRepository;
+        this.flightScheduleService = flightScheduleService1;
         this.tripMapper = tripMapper;
         this.jwtUtil = jwtUtil;
     }
@@ -70,14 +72,12 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public TripDto changeStatus(TripDto tripWithNewStatus) {
-        Optional<Trip> tripOptional = tripRepository.findById(tripWithNewStatus.getId());
+        Trip existingTrip = getById(tripWithNewStatus.getId());
         Trip updatedTrip = null;
 
-        if (tripOptional.isEmpty()) {
-            throw new NoSuchElementException();
+        if (tripWithNewStatus.getStatus() == null) {
+            throw new IllegalArgumentException("Please add a status");
         }
-
-        Trip existingTrip = tripOptional.get();
 
         if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
@@ -103,57 +103,17 @@ public class TripServiceImpl implements TripService {
                 rejectTrip(existingTrip, newStatus);
                 updatedTrip = tripRepository.save(existingTrip);
                 break;
+
             }
         }
-        
+
         log.info("Trip newStatus changed!");
         return tripMapper.tripToDto(updatedTrip);
     }
 
     @Override
-    public TripDto findById(Long userId, Long tripId) {
-        Optional<Trip> trip = tripRepository.findById(tripId);
-
-        if (trip.isEmpty()) {
-            throw new NoSuchElementException();
-        }
-
-        Trip existingTrip = trip.get();
-
-        if (!userId.equals(jwtUtil.getLoggedInUser().getId()) ||
-                !existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
-        }
-
-        log.info("Trip fetched by ID");
-        return tripMapper.tripToDto(existingTrip);
-    }
-
-    @Override
-    public List<Trip> findAll() {
-
-        log.info("All trips fetched!");
-        return tripRepository.findAll();
-    }
-
-
-    @Override
-    public void deleteTrip(Long id) {
-
-        log.info("Trip soft deleted!");
-        tripRepository.softDelete(id);
-    }
-
-    @Override
     public TripDto updateDetails(TripDto updatedTripDto) {
-        Optional<Trip> existingTripOptional = tripRepository.findById(updatedTripDto.getId());
-        Trip existingTrip;
-
-        if (existingTripOptional.isEmpty()) {
-            throw new NoSuchElementException();
-        }
-
-        existingTrip = existingTripOptional.get();
+        Trip existingTrip = getById(updatedTripDto.getId());
 
         if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
@@ -179,6 +139,8 @@ public class TripServiceImpl implements TripService {
         existingTrip.setDepartureDate(departureDate);
         existingTrip.setArrivalLocation(arrivalLocation);
         existingTrip.setDepartureLocation(departureLocation);
+        existingTrip.setReason(updatedTripDto.getReason());
+        existingTrip.setDescription(updatedTripDto.getDescription());
 
         log.info("Trip details updated!");
 
@@ -186,45 +148,7 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public TripDto bookFlight(Long tripId, Long flightId) {
-        Optional<Trip> existingTripOpt = tripRepository.findById(tripId);
-        Optional<FlightSchedule> existingFlightOpt = flightScheduleRepository.findById(flightId);
-
-
-        if (existingTripOpt.isEmpty()) {
-            throw new NoSuchElementException("There is no existing trip with this ID");
-        }
-
-        Trip existingTrip = existingTripOpt.get();
-
-        if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
-        }
-
-        if (existingFlightOpt.isEmpty()) {
-            throw new NoSuchElementException("There are no existing flights with this ID");
-        }
-
-        FlightSchedule existingFlight = existingFlightOpt.get();
-
-        if (existingTrip.getFlightSchedules().contains(existingFlight)) {
-            throw new UnsupportedOperationException("This flight is already added!");
-        }
-
-        if (existingFlight.getDepartureDate().before(existingFlight.getDepartureDate()) ||
-                existingFlight.getArrivalDate().after(existingFlight.getArrivalDate())) {
-            throw new IllegalArgumentException("Dates are wrong!");
-        }
-
-        existingTrip.getFlightSchedules().add(existingFlight);
-        Trip savedTrip = tripRepository.save(existingTrip);
-
-        log.info("Flight added to trip!");
-        return tripMapper.tripToDto(savedTrip);
-    }
-
-    @Override
-    public List<TripDto> filterTrips(Long userId, Optional<TripReason> reason, Optional<TripStatus> status) {
+    public List<TripDto> findUserTrips(Long userId, Optional<TripReason> reason, Optional<TripStatus> status) {
 
         List<Trip> filteredTrips;
         Long loggedUserId = jwtUtil.getLoggedInUser().getId();
@@ -245,6 +169,79 @@ public class TripServiceImpl implements TripService {
 
         log.info("Trips filtered!");
         return tripMapper.tripToDtoList(filteredTrips);
+    }
+
+    @Override
+    public TripDto findUserTripById(Long userId, Long tripId) {
+        Trip existingTrip = getById(tripId);
+
+        if (!userId.equals(jwtUtil.getLoggedInUser().getId()) ||
+                !existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
+        }
+
+        log.info("Trip fetched by ID");
+        return tripMapper.tripToDto(existingTrip);
+    }
+
+    @Override
+    public List<Trip> findAll() {
+
+        log.info("All trips fetched!");
+        return tripRepository.findAll();
+    }
+
+
+    @Override
+    public void softDelete(Long id) {
+
+        Trip existingTrip = getById(id);
+
+        if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
+        }
+
+        log.info("Trip soft deleted!");
+        tripRepository.softDelete(id);
+    }
+
+    @Override
+    public TripDto bookFlight(Long tripId, Long flightId) {
+        Trip existingTrip = getById(tripId);
+        FlightSchedule existingFlight = flightScheduleService.getById(flightId);
+
+        if (!existingTrip.getUserId().equals(jwtUtil.getLoggedInUser().getId())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
+        }
+
+        if (existingTrip.getStatus() != TripStatus.APPROVED) {
+            throw new UnsupportedOperationException("The trip has not been approved!");
+        }
+
+        if (existingTrip.getFlightSchedules().contains(existingFlight)) {
+            throw new UnsupportedOperationException("This flight is already added!");
+        }
+
+        if (existingFlight.getDepartureDate().before(existingFlight.getDepartureDate()) ||
+                existingFlight.getArrivalDate().after(existingFlight.getArrivalDate())) {
+            throw new IllegalArgumentException("Dates are wrong!");
+        }
+
+        existingTrip.getFlightSchedules().add(existingFlight);
+        Trip savedTrip = tripRepository.save(existingTrip);
+
+        log.info("Flight added to trip!");
+        return tripMapper.tripToDto(savedTrip);
+    }
+
+    private Trip getById(Long id) {
+        Optional<Trip> trip = tripRepository.findById(id);
+
+        if (trip.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
+        return trip.get();
     }
 
     private void sendTripForAdminApproval(Trip existingTrip, TripStatus status) {

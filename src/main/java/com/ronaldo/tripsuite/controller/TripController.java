@@ -43,12 +43,23 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(code = 403, message = "You do not have the proper permissions"),
             @ApiResponse(code = 401, message = "You are not authorized to do that")
-
     })
     public ResponseEntity<TripDto> changeStatus(@RequestBody TripDto tripDto) {
         TripDto updatedTrip = tripService.changeStatus(tripDto);
         return ResponseEntity.ok().body(updatedTrip);
     }
+
+    @PutMapping({"/trips"})
+    @ApiOperation(value = "Update trip details")
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "You do not have the proper permissions"),
+            @ApiResponse(code = 401, message = "You are not authorized to do that")
+    })
+    public ResponseEntity<TripDto> updateTripDetails(@Valid @RequestBody TripDto tripDto) {
+        TripDto updatedTrip = tripService.updateDetails(tripDto);
+        return ResponseEntity.ok().body(updatedTrip);
+    }
+
 
     @GetMapping({"/users/{userId}/trips"})
     @ApiOperation(value = "Retrieve trips of a user")
@@ -57,8 +68,8 @@ public class TripController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<List<TripDto>> filterTrips(@PathVariable Long userId, @RequestParam Optional<TripReason> reason, @RequestParam Optional<TripStatus> status) {
-        List<TripDto> filteredTrips = tripService.filterTrips(userId, reason, status);
+    public ResponseEntity<List<TripDto>> findUserTrips(@PathVariable Long userId, @RequestParam Optional<TripReason> reason, @RequestParam Optional<TripStatus> status) {
+        List<TripDto> filteredTrips = tripService.findUserTrips(userId, reason, status);
         return ResponseEntity.ok().body(filteredTrips);
     }
 
@@ -69,8 +80,8 @@ public class TripController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<TripDto> getTrip(@PathVariable Long userId, @PathVariable Long tripId) {
-        TripDto retrievedTrip = tripService.findById(userId, tripId);
+    public ResponseEntity<TripDto> getUserTrip(@PathVariable Long userId, @PathVariable Long tripId) {
+        TripDto retrievedTrip = tripService.findUserTripById(userId, tripId);
         return ResponseEntity.ok().body(retrievedTrip);
     }
 
@@ -82,22 +93,10 @@ public class TripController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        tripService.deleteTrip(id);
+    public ResponseEntity<?> deleteTrip(@PathVariable Long id) {
+        tripService.softDelete(id);
         return ResponseEntity.ok().build();
 
-    }
-
-    @PutMapping({"/trips"})
-    @ApiOperation(value = "Update trip details")
-    @ApiResponses(value = {
-            @ApiResponse(code = 403, message = "You do not have the proper permissions"),
-            @ApiResponse(code = 401, message = "You are not authorized to do that")
-
-    })
-    public ResponseEntity<TripDto> updateTripDetails(@Valid @RequestBody TripDto tripDto) {
-        TripDto updatedTrip = tripService.updateDetails(tripDto);
-        return ResponseEntity.ok().body(updatedTrip);
     }
 
     @PostMapping({"/trips/flights"})
@@ -105,7 +104,6 @@ public class TripController {
     @ApiResponses(value = {
             @ApiResponse(code = 403, message = "You do not have the proper permissions"),
             @ApiResponse(code = 401, message = "You are not authorized to do that")
-
     })
     public ResponseEntity<TripDto> bookFlight(@Valid @RequestBody BookFlightRequestDto bookFlightRequestDto) {
         Long tripId = bookFlightRequestDto.getTripId();
