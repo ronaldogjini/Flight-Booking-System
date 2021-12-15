@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +33,7 @@ public class FlightScheduleController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<FlightScheduleDto> saveFlightSchedule(@RequestBody FlightScheduleDto flightScheduleDto) {
+    public ResponseEntity<FlightScheduleDto> saveFlightSchedule(@Valid @RequestBody FlightScheduleDto flightScheduleDto) {
         FlightScheduleDto savedFlightSchedule = flightScheduleService.saveFlightSchedule(flightScheduleDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedFlightSchedule);
     }

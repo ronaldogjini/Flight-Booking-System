@@ -26,35 +26,35 @@ public class Trip {
     @Column(name = "user_id")
     private Long userId;
 
-//    @NotBlank
+    //    @NotBlank
     @Enumerated(EnumType.STRING)
     @Column(name = "reason")
     private TripReason reason;
 
-    @NotBlank
     @Column(name = "description")
     private String description;
 
-    @NotBlank
     @Column(name = "departure_location")
     private String departureLocation;
 
-    @NotBlank
     @Column(name = "arrival_location")
     private String arrivalLocation;
 
 
-//    @FutureOrPresent
+    //    @FutureOrPresent
     @Column(name = "departure_date")
     private Date departureDate;
 
-//    @FutureOrPresent
+    //    @FutureOrPresent
     @Column(name = "arrival_date")
     private Date arrivalDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private TripStatus status;
+
+    @Column(name = "deleted")
+    private boolean deleted = false;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "trip_flights",

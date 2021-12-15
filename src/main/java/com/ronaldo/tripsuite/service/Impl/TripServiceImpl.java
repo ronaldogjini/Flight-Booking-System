@@ -67,10 +67,14 @@ public class TripServiceImpl implements TripService {
 
         Trip newTrip = tripMapper.dtoToTrip(tripDto);
 
+        Date currentDate = new Date(System.currentTimeMillis());
+
         Date arrivalDate = newTrip.getArrivalDate();
         Date departureDate = newTrip.getDepartureDate();
-
-        if (arrivalDate.before(departureDate)) {
+        
+        if (arrivalDate.before(currentDate) ||
+                departureDate.before(currentDate) ||
+                arrivalDate.before(departureDate)) {
             throw new IllegalArgumentException();
         }
 
@@ -79,6 +83,11 @@ public class TripServiceImpl implements TripService {
 
         Trip savedTrip = tripRepository.save(newTrip);
         return tripMapper.tripToDto(savedTrip);
+    }
+
+    @Override
+    public void deleteTrip(Long id) {
+        tripRepository.softDelete(id);
     }
 
     @Override
@@ -141,10 +150,22 @@ public class TripServiceImpl implements TripService {
             throw new IllegalArgumentException();
         }
 
-        existingTrip.setArrivalDate(updatedTripDto.getArrivalDate());
-        existingTrip.setDepartureDate(updatedTripDto.getDepartureDate());
-        existingTrip.setArrivalLocation(updatedTripDto.getArrivalLocation());
-        existingTrip.setDepartureLocation(updatedTripDto.getDepartureLocation());
+        Date currentDate = new Date(System.currentTimeMillis());
+        Date arrivalDate = updatedTripDto.getArrivalDate();
+        Date departureDate = updatedTripDto.getDepartureDate();
+        String departureLocation = updatedTripDto.getDepartureLocation();
+        String arrivalLocation = updatedTripDto.getArrivalLocation();
+
+        if (arrivalDate.before(currentDate) ||
+                departureDate.before(currentDate) ||
+                arrivalDate.before(departureDate)) {
+            throw new IllegalArgumentException();
+        }
+
+        existingTrip.setArrivalDate(arrivalDate);
+        existingTrip.setDepartureDate(departureDate);
+        existingTrip.setArrivalLocation(arrivalLocation);
+        existingTrip.setDepartureLocation(departureLocation);
 
         return tripMapper.tripToDto(tripRepository.save(existingTrip));
     }

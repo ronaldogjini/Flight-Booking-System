@@ -18,11 +18,9 @@ public class Plane {
     @Id
     private String id;
 
-    @NotBlank
     @Column(name = "manufacturer")
     private String manufacturer;
 
-    @NotBlank
     @Column(name = "make")
     private String make;
 }

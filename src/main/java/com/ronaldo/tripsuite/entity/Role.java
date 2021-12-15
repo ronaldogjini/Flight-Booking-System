@@ -18,11 +18,9 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotBlank
     @Column(name = "name")
     private String name;
 
-    @NotBlank
     @Column(name = "description")
     private String description;
 

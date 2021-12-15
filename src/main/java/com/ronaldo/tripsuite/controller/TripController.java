@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,9 +60,22 @@ public class TripController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<TripDto> saveTrip(@RequestBody TripDto tripDto) {
+    public ResponseEntity<TripDto> saveTrip(@Valid @RequestBody TripDto tripDto) {
         TripDto savedTrip = tripService.save(tripDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTrip);
+
+    }
+
+    @DeleteMapping({"/trips/{id}"})
+    @ApiOperation(value = "Delete a trip!")
+    @ApiResponses(value = {
+            @ApiResponse(code = 403, message = "You do not have the proper permissions"),
+            @ApiResponse(code = 401, message = "You are not authorized to do that")
+
+    })
+    public ResponseEntity delete(@PathVariable Long id) {
+        tripService.deleteTrip(id);
+        return ResponseEntity.ok().build();
 
     }
 
@@ -72,7 +86,7 @@ public class TripController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<TripDto> updateTripDetails(@RequestBody TripDto tripDto) {
+    public ResponseEntity<TripDto> updateTripDetails(@Valid @RequestBody TripDto tripDto) {
         TripDto updatedTrip = tripService.updateDetails(tripDto);
         return ResponseEntity.ok().body(updatedTrip);
     }
@@ -99,7 +113,7 @@ public class TripController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<TripDto> bookFlight(@RequestBody BookFlightRequestDto bookFlightRequestDto) {
+    public ResponseEntity<TripDto> bookFlight(@Valid @RequestBody BookFlightRequestDto bookFlightRequestDto) {
         Long tripId = bookFlightRequestDto.getTripId();
         Long flightId = bookFlightRequestDto.getFlightId();
 

@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api")
 public class RoleController {
@@ -31,7 +33,7 @@ public class RoleController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<RoleDto> saveRole(@RequestBody RoleDto roleDto) {
+    public ResponseEntity<RoleDto> saveRole(@Valid @RequestBody RoleDto roleDto) {
         RoleDto savedRole = roleService.saveRole(roleDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedRole);
     }

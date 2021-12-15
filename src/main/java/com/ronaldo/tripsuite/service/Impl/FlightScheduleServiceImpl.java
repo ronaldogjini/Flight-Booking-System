@@ -67,7 +67,7 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
         FlightSchedule newFlightSchedule = flightScheduleMapper.dtoToFlightSchedule(flightScheduleDto);
         String arrivalTime = newFlightSchedule.getArrivalTime().toString();
         String departureTime = newFlightSchedule.getArrivalTime().toString();
-
+        
         newFlightSchedule.setDepartureTime(Time.valueOf(departureTime));
         newFlightSchedule.setArrivalTime(Time.valueOf(arrivalTime));
 

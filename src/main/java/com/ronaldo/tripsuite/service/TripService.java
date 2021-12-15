@@ -16,6 +16,8 @@ public interface TripService {
 
     TripDto save(TripDto trip);
 
+    void deleteTrip(Long id);
+
     TripDto changeStatus(TripDto trip);
 
     TripDto updateDetails(TripDto trip);

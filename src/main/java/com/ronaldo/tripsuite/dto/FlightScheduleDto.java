@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
 import java.sql.Time;
@@ -16,8 +17,10 @@ public class FlightScheduleDto {
     @NotNull(message = "Flight ID cannot be null")
     private Long flightId;
     @NotNull(message = "Departure date cannot be null")
+    @FutureOrPresent
     private Date departureDate;
     @NotNull(message = "Arrival Date cannot be null")
+    @FutureOrPresent
     private Date arrivalDate;
     @NotNull(message = "Departure Time cannot be null")
     private Time departureTime;
