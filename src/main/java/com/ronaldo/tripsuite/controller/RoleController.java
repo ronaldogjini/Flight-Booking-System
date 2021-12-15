@@ -1,13 +1,10 @@
 package com.ronaldo.tripsuite.controller;
 
 import com.ronaldo.tripsuite.dto.RoleDto;
-import com.ronaldo.tripsuite.entity.Role;
 import com.ronaldo.tripsuite.service.RoleService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,8 +19,11 @@ import javax.validation.Valid;
 @RequestMapping("/api")
 public class RoleController {
 
-    @Autowired
-    private RoleService roleService;
+    private final RoleService roleService;
+
+    public RoleController(RoleService roleService) {
+        this.roleService = roleService;
+    }
 
     @PreAuthorize("hasRole('Admin')")
     @PostMapping({"/roles"})

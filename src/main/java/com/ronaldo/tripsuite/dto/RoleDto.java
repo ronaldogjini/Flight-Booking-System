@@ -3,16 +3,15 @@ package com.ronaldo.tripsuite.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
+
 
 @Getter
 @Setter
 public class RoleDto {
 
-    @NotNull(message = "Name cannot be null")
+    @NotEmpty(message = "Name cannot be empty")
     private String name;
-    @NotNull(message = "Description cannot be null")
+    @NotEmpty(message = "Description cannot be empty")
     private String description;
 }

@@ -23,6 +23,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleDto saveRole(RoleDto roleDto) {
 
         Role newRole = roleMapper.dtoToRole(roleDto);
+        
         Role savedRole = roleRepository.save(newRole);
 
         log.info("New role saved!");

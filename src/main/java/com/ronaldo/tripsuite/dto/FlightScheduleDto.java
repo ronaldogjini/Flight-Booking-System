@@ -6,6 +6,7 @@ import com.ronaldo.tripsuite.entity.Plane;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
 
@@ -25,6 +26,6 @@ public class FlightScheduleDto {
     @NotNull(message = "Arrival Date cannot be null")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date arrivalDate;
-    @NotNull(message = "Plane ID cannot be null")
+    @NotEmpty(message = "Plane ID cannot be null")
     private String planeId;
 }

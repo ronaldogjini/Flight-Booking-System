@@ -11,7 +11,8 @@ import javax.validation.constraints.NotBlank;
 @Getter
 @ToString
 @Entity
-@Table(name = "roles")
+@Table(name = "roles", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "name"),})
 public class Role {
 
     @Id
