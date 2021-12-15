@@ -1,11 +1,9 @@
 package com.ronaldo.tripsuite.service.Impl;
 
 import com.ronaldo.tripsuite.entity.Flight;
-import com.ronaldo.tripsuite.entity.Trip;
 import com.ronaldo.tripsuite.repository.FlightRepository;
 import com.ronaldo.tripsuite.service.FlightService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -15,8 +13,11 @@ import java.util.Optional;
 @Slf4j
 public class FlightServiceImpl implements FlightService {
 
-    @Autowired
-    private FlightRepository flightRepository;
+    private final FlightRepository flightRepository;
+
+    public FlightServiceImpl(FlightRepository flightRepository) {
+        this.flightRepository = flightRepository;
+    }
 
     @Override
     public Flight findById(Long id) {

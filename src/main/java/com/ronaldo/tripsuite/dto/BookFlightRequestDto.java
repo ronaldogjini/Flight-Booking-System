@@ -11,6 +11,6 @@ public class BookFlightRequestDto {
 
     @NotNull(message = " Trip ID cannot be null")
     private Long tripId;
-    @NotNull(message = "Flight ID cannot be null")
+    @NotNull(message = "Flight Schedule ID cannot be null")
     private Long flightId;
 }

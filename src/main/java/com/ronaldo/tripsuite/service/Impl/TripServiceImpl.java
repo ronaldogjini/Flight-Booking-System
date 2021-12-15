@@ -11,7 +11,6 @@ import com.ronaldo.tripsuite.repository.TripRepository;
 import com.ronaldo.tripsuite.service.TripService;
 import com.ronaldo.tripsuite.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -25,17 +24,17 @@ import java.util.Optional;
 @Slf4j
 public class TripServiceImpl implements TripService {
 
-    @Autowired
-    private TripRepository tripRepository;
+    private final TripRepository tripRepository;
+    private final FlightScheduleRepository flightScheduleRepository;
+    private final TripMapper tripMapper;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private FlightScheduleRepository flightScheduleRepository;
-
-    @Autowired
-    private TripMapper tripMapper;
-
-    @Autowired
-    JwtUtil jwtUtil;
+    public TripServiceImpl(TripRepository tripRepository, FlightScheduleRepository flightScheduleRepository, TripMapper tripMapper, JwtUtil jwtUtil) {
+        this.tripRepository = tripRepository;
+        this.flightScheduleRepository = flightScheduleRepository;
+        this.tripMapper = tripMapper;
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     public TripDto findById(Long userId, Long tripId) {

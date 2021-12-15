@@ -2,15 +2,12 @@ package com.ronaldo.tripsuite.service.Impl;
 
 import com.ronaldo.tripsuite.dto.UserDto;
 import com.ronaldo.tripsuite.mapper.UserMapper;
-import com.ronaldo.tripsuite.repository.RoleRepository;
 import com.ronaldo.tripsuite.repository.UserRepository;
 import com.ronaldo.tripsuite.entity.Role;
 import com.ronaldo.tripsuite.entity.User;
 import com.ronaldo.tripsuite.service.RoleService;
 import com.ronaldo.tripsuite.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +17,17 @@ import java.util.*;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    @Autowired
-    private RoleService roleService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    UserMapper userMapper;
+    public UserServiceImpl(UserRepository userRepository, RoleService roleService, PasswordEncoder passwordEncoder, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
+    }
 
     public UserDto saveUser(UserDto userDto) {
 

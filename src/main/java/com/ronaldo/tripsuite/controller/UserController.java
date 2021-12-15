@@ -36,7 +36,7 @@ public class UserController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<UserDto> registerNewUser(@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> saveUser(@Valid @RequestBody UserDto userDto) {
         UserDto savedUser = userService.saveUser(userDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }

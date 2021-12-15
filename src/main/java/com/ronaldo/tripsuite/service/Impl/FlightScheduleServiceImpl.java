@@ -9,12 +9,11 @@ import com.ronaldo.tripsuite.repository.FlightScheduleRepository;
 import com.ronaldo.tripsuite.repository.PlaneRepository;
 import com.ronaldo.tripsuite.service.FlightScheduleService;
 import com.ronaldo.tripsuite.service.FlightService;
+import com.ronaldo.tripsuite.service.PlaneService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
-import java.sql.Time;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,17 +21,17 @@ import java.util.Optional;
 @Slf4j
 public class FlightScheduleServiceImpl implements FlightScheduleService {
 
-    @Autowired
-    private FlightScheduleRepository flightScheduleRepository;
+    private final FlightScheduleRepository flightScheduleRepository;
+    private final PlaneService planeService;
+    private final FlightService flightService;
+    private final FlightScheduleMapper flightScheduleMapper;
 
-    @Autowired
-    private PlaneRepository planeRepository;
-
-    @Autowired
-    private FlightService flightService;
-
-    @Autowired
-    private FlightScheduleMapper flightScheduleMapper;
+    public FlightScheduleServiceImpl(FlightScheduleRepository flightScheduleRepository, PlaneRepository planeRepository, PlaneService planeService, FlightService flightService, FlightScheduleMapper flightScheduleMapper) {
+        this.flightScheduleRepository = flightScheduleRepository;
+        this.planeService = planeService;
+        this.flightService = flightService;
+        this.flightScheduleMapper = flightScheduleMapper;
+    }
 
     @Override
     public List<FlightSchedule> findAll() {
@@ -40,7 +39,7 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
     }
 
     @Override
-    public List<FlightScheduleDto> findFlights(Optional<String> departureCity, Optional<String> arrivalCity, Optional<Date> date) {
+    public List<FlightScheduleDto> searchFlightSchedules(Optional<String> departureCity, Optional<String> arrivalCity, Optional<Date> date) {
 
         Date currentDate = new Date(System.currentTimeMillis());
         List<FlightSchedule> foundFlights;
@@ -72,18 +71,30 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
     @Override
     public FlightScheduleDto saveFlightSchedule(FlightScheduleDto flightScheduleDto) {
 
-        Plane foundPlane = planeRepository.findById("B737").get();
+        Plane foundPlane = planeService.findById(flightScheduleDto.getPlaneId());
         Flight foundFlight = flightService.findById(flightScheduleDto.getFlightId());
 
         FlightSchedule newFlightSchedule = flightScheduleMapper.dtoToFlightSchedule(flightScheduleDto);
+
+        Date currentDate = new Date(System.currentTimeMillis());
+        Date arrivalDate = flightScheduleDto.getArrivalDate();
+        Date departureDate = flightScheduleDto.getDepartureDate();
+
+        if (arrivalDate.before(currentDate) ||
+                departureDate.before(currentDate) ||
+                arrivalDate.before(departureDate)) {
+            throw new IllegalArgumentException("Dates are wrong!");
+        }
 
         newFlightSchedule.setPlane(foundPlane);
         newFlightSchedule.setFlight(foundFlight);
 
         log.info("New flight schedule added!");
 
-        return flightScheduleMapper
-                .flightScheduletoDto(flightScheduleRepository
-                        .save(newFlightSchedule));
+        FlightSchedule savedFlightSchedule = flightScheduleRepository.save(newFlightSchedule);
+        FlightScheduleDto savedFlightScheduleDto = flightScheduleMapper.flightScheduletoDto(savedFlightSchedule);
+        savedFlightScheduleDto.setFlightId(savedFlightSchedule.getFlight().getId());
+        savedFlightScheduleDto.setPlaneId(savedFlightSchedule.getPlane().getId());
+        return savedFlightScheduleDto;
     }
 }

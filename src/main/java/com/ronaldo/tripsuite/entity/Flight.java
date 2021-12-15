@@ -2,11 +2,9 @@ package com.ronaldo.tripsuite.entity;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.exception.DataException;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import java.util.Date;
+
 
 @Entity
 @Table(name = "flights")

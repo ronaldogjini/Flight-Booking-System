@@ -24,17 +24,19 @@ import java.util.Set;
 @Service
 public class AuthService implements UserDetailsService {
 
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    @Autowired
-    private UserMapper userMapper;
+    public AuthService(JwtUtil jwtUtil, UserRepository userRepository, UserMapper userMapper) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+    }
+
 
     public JwtResponseDto createJwtToken(JwtRequestDto jwtRequestDto) throws Exception {
         String userName = jwtRequestDto.getUsername();

@@ -1,13 +1,10 @@
 package com.ronaldo.tripsuite.controller;
 
 import com.ronaldo.tripsuite.dto.FlightScheduleDto;
-import com.ronaldo.tripsuite.entity.FlightSchedule;
 import com.ronaldo.tripsuite.service.FlightScheduleService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,8 +19,11 @@ import java.util.Optional;
 @RequestMapping("/api")
 public class FlightScheduleController {
 
-    @Autowired
-    private FlightScheduleService flightScheduleService;
+    private final FlightScheduleService flightScheduleService;
+
+    public FlightScheduleController(FlightScheduleService flightScheduleService) {
+        this.flightScheduleService = flightScheduleService;
+    }
 
     @PreAuthorize("hasRole('Admin')")
     @PostMapping({"/flightschedules"})
@@ -45,11 +45,11 @@ public class FlightScheduleController {
             @ApiResponse(code = 401, message = "You are not authorized to do that")
 
     })
-    public ResponseEntity<List<FlightScheduleDto>> searchFlights(@RequestParam Optional<String> departureCity,
-                                                                 @RequestParam Optional<String> arrivalCity,
-                                                                 @RequestParam Optional<Date> departureDate) {
+    public ResponseEntity<List<FlightScheduleDto>> searchFlightSchedules(@RequestParam Optional<String> departureCity,
+                                                                         @RequestParam Optional<String> arrivalCity,
+                                                                         @RequestParam Optional<Date> departureDate) {
 
-        List<FlightScheduleDto> foundFlights = flightScheduleService.findFlights(departureCity, arrivalCity, departureDate);
+        List<FlightScheduleDto> foundFlights = flightScheduleService.searchFlightSchedules(departureCity, arrivalCity, departureDate);
         return ResponseEntity.ok().body(foundFlights);
     }
 }

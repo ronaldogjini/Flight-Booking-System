@@ -6,18 +6,19 @@ import com.ronaldo.tripsuite.repository.RoleRepository;
 import com.ronaldo.tripsuite.entity.Role;
 import com.ronaldo.tripsuite.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class RoleServiceImpl implements RoleService {
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
 
-    @Autowired
-    private RoleMapper roleMapper;
+    public RoleServiceImpl(RoleRepository roleRepository, RoleMapper roleMapper) {
+        this.roleRepository = roleRepository;
+        this.roleMapper = roleMapper;
+    }
 
     public RoleDto saveRole(RoleDto roleDto) {
 

@@ -40,15 +40,14 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors();
         httpSecurity.csrf().disable()
-                .authorizeRequests().antMatchers("/api/login", "api/users", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-resources/**",
+                .authorizeRequests().antMatchers("/api/login", "/swagger-ui.html", "/swagger-ui/index.html", "/swagger-resources/**",
                 "/v2/api-docs*", "/webjars/**", "/swaggerfox.js", "/swagger-ui/*").permitAll()
                 .antMatchers(HttpHeaders.ALLOW).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        ;
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
