@@ -37,7 +37,6 @@ public class TripController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedTrip);
     }
 
-    // change status of the flight (CREATED -> WAITING_FOR_APPROVAL -> CONFIRMED/DELETED)
     @PatchMapping({"/trips/status"})
     @ApiOperation(value = "Change the trip status")
     @ApiResponses(value = {

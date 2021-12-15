@@ -25,7 +25,7 @@ public class JwtUtil {
     @Autowired
     private RoleService roleService;
 
-
+    // TODO: the key needs to be much longer and stronger in real life
     private static final String SECRET_KEY = "learn_programming_yourself";
 
     private static final int TOKEN_VALIDITY = 3600 * 5;

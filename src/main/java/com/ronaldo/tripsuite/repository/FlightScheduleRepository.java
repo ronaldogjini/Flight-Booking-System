@@ -1,7 +1,6 @@
 package com.ronaldo.tripsuite.repository;
 
 import com.ronaldo.tripsuite.entity.FlightSchedule;
-import com.ronaldo.tripsuite.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

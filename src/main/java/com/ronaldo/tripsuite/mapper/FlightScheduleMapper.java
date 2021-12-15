@@ -25,5 +25,4 @@ public interface FlightScheduleMapper {
     @Mapping(ignore = true, target = "flight")
     FlightSchedule dtoToFlightSchedule(FlightScheduleDto flightScheduleDto);
 
-    List<FlightSchedule> dtoToFlightScheduleList(List<FlightScheduleDto> flightScheduleDtoList);
 }

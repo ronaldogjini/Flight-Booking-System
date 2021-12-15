@@ -21,5 +21,4 @@ public interface TripMapper {
 
     Trip dtoToTrip(TripDto tripDto);
 
-    List<Trip> dtoToTripList(List<TripDto> tripDtoList);
 }

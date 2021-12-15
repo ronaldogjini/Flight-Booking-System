@@ -1,7 +1,6 @@
 package com.ronaldo.tripsuite.service.Impl;
 
 import com.ronaldo.tripsuite.dto.TripDto;
-import com.ronaldo.tripsuite.entity.Flight;
 import com.ronaldo.tripsuite.entity.FlightSchedule;
 import com.ronaldo.tripsuite.entity.Trip;
 import com.ronaldo.tripsuite.enums.TripReason;

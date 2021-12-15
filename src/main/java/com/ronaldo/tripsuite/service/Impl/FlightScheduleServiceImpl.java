@@ -4,7 +4,6 @@ import com.ronaldo.tripsuite.dto.FlightScheduleDto;
 import com.ronaldo.tripsuite.entity.Flight;
 import com.ronaldo.tripsuite.entity.FlightSchedule;
 import com.ronaldo.tripsuite.entity.Plane;
-import com.ronaldo.tripsuite.entity.Trip;
 import com.ronaldo.tripsuite.mapper.FlightScheduleMapper;
 import com.ronaldo.tripsuite.repository.FlightScheduleRepository;
 import com.ronaldo.tripsuite.repository.PlaneRepository;

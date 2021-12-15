@@ -73,25 +73,9 @@ public class ExceptionHandlerGlobal {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorMessageDto("Wrong field format"));
     }
 
-//    @ExceptionHandler(HttpMessageNotReadableException.class)
-//    public ResponseEntity handleMessageConversion(HttpMessageConversionException e) {
-//
-////        Map<String, String> errors = new HashMap<>();
-////
-////        e.getBindingResult().getAllErrors().forEach(error -> {
-////            String fieldName = ((FieldError) error).getField();
-////            String errorMessage = error.getDefaultMessage();
-////            errors.put(fieldName, errorMessage);
-////        });
-//
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getHttpInputMessage());
-//    }
-
-
     @ExceptionHandler(UnsupportedOperationException.class)
     public ResponseEntity<?> handleMethodArgs(UnsupportedOperationException e) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(new ErrorMessageDto(e.getMessage()));
     }
-
 
 }

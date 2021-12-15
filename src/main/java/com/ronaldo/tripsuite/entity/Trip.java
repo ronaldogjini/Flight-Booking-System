@@ -26,7 +26,6 @@ public class Trip {
     @Column(name = "user_id")
     private Long userId;
 
-    //    @NotBlank
     @Enumerated(EnumType.STRING)
     @Column(name = "reason")
     private TripReason reason;
@@ -41,11 +40,9 @@ public class Trip {
     private String arrivalLocation;
 
 
-    //    @FutureOrPresent
     @Column(name = "departure_date")
     private Date departureDate;
 
-    //    @FutureOrPresent
     @Column(name = "arrival_date")
     private Date arrivalDate;
 
