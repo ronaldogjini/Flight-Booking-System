@@ -27,7 +27,7 @@ public class TripDto {
     @NotNull(message = "Departure Date cannot be null")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date departureDate;
-    @NotNull(message = "Arrival Date be null")
+    @NotNull(message = "Arrival Date cannot be null")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date arrivalDate;
 

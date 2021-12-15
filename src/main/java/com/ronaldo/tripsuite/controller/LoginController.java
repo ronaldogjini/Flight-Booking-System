@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RequestMapping("/api")
 
-public class JwtController {
+public class LoginController {
 
     @Autowired
     private AuthService authService;
