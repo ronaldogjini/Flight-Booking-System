@@ -31,6 +31,5 @@ public class TripDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private Date arrivalDate;
 
-
     private TripStatus status;
 }

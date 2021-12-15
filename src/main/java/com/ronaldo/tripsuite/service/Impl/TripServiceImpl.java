@@ -8,23 +8,21 @@ import com.ronaldo.tripsuite.enums.TripStatus;
 import com.ronaldo.tripsuite.mapper.TripMapper;
 import com.ronaldo.tripsuite.repository.FlightScheduleRepository;
 import com.ronaldo.tripsuite.repository.TripRepository;
-import com.ronaldo.tripsuite.service.FlightScheduleService;
 import com.ronaldo.tripsuite.service.TripService;
 import com.ronaldo.tripsuite.util.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.swing.text.html.Option;
-import java.nio.file.AccessDeniedException;
 import java.sql.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class TripServiceImpl implements TripService {
 
     @Autowired
@@ -54,11 +52,14 @@ public class TripServiceImpl implements TripService {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN);
         }
 
+        log.info("Trip fetched by ID");
         return tripMapper.tripToDto(existingTrip);
     }
 
     @Override
     public List<Trip> findAll() {
+
+        log.info("All trips fetched!");
         return tripRepository.findAll();
     }
 
@@ -67,26 +68,38 @@ public class TripServiceImpl implements TripService {
 
         Trip newTrip = tripMapper.dtoToTrip(tripDto);
 
-        Date currentDate = new Date(System.currentTimeMillis());
+        List<Trip> allTrips = findAll();
 
+        allTrips.forEach(trip -> {
+            if (trip.getDepartureDate().before(newTrip.getDepartureDate())
+                    && trip.getArrivalDate().after(newTrip.getDepartureDate())) {
+                throw new IllegalArgumentException("A trip already exists during these dates!");
+            }
+        });
+
+        Date currentDate = new Date(System.currentTimeMillis());
         Date arrivalDate = newTrip.getArrivalDate();
         Date departureDate = newTrip.getDepartureDate();
-        
+
         if (arrivalDate.before(currentDate) ||
                 departureDate.before(currentDate) ||
-                arrivalDate.before(departureDate)) {
-            throw new IllegalArgumentException();
+                departureDate.before(arrivalDate)) {
+            throw new IllegalArgumentException("Dates are not correct!");
         }
 
         newTrip.setStatus(TripStatus.CREATED);
         newTrip.setUserId(jwtUtil.getLoggedInUser().getId());
 
         Trip savedTrip = tripRepository.save(newTrip);
+
+        log.info("New trip saved!");
         return tripMapper.tripToDto(savedTrip);
     }
 
     @Override
     public void deleteTrip(Long id) {
+
+        log.info("Trip soft deleted!");
         tripRepository.softDelete(id);
     }
 
@@ -109,8 +122,7 @@ public class TripServiceImpl implements TripService {
 
         switch (status) {
             case CREATED: {
-                throw new IllegalArgumentException();
-
+                throw new IllegalArgumentException("Trip cannot go back to CREATED");
             }
             case WAITING_FOR_APPROVAL: {
                 sendTripForAdminApproval(existingTrip, status);
@@ -128,6 +140,7 @@ public class TripServiceImpl implements TripService {
                 break;
             }
         }
+        log.info("Trip status changed!");
         return tripMapper.tripToDto(updatedTrip);
     }
 
@@ -147,7 +160,7 @@ public class TripServiceImpl implements TripService {
         }
 
         if (existingTrip.getStatus() != TripStatus.CREATED) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("The trip cannot be updated at this stage!");
         }
 
         Date currentDate = new Date(System.currentTimeMillis());
@@ -159,13 +172,15 @@ public class TripServiceImpl implements TripService {
         if (arrivalDate.before(currentDate) ||
                 departureDate.before(currentDate) ||
                 arrivalDate.before(departureDate)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Dates are wrong!");
         }
 
         existingTrip.setArrivalDate(arrivalDate);
         existingTrip.setDepartureDate(departureDate);
         existingTrip.setArrivalLocation(arrivalLocation);
         existingTrip.setDepartureLocation(departureLocation);
+
+        log.info("Trip details updated!");
 
         return tripMapper.tripToDto(tripRepository.save(existingTrip));
     }
@@ -175,8 +190,9 @@ public class TripServiceImpl implements TripService {
         Optional<Trip> existingTripOpt = tripRepository.findById(tripId);
         Optional<FlightSchedule> existingFlightOpt = flightScheduleRepository.findById(flightId);
 
+
         if (existingTripOpt.isEmpty()) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException("There is no existing trip with this ID");
         }
 
         Trip existingTrip = existingTripOpt.get();
@@ -186,19 +202,24 @@ public class TripServiceImpl implements TripService {
         }
 
         if (existingFlightOpt.isEmpty()) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException("There are no existing flights with this ID");
         }
 
         FlightSchedule existingFlight = existingFlightOpt.get();
 
+        if (existingTrip.getFlightSchedules().contains(existingFlight)) {
+            throw new IllegalArgumentException("This flight is already added!");
+        }
+
         if (existingFlight.getDepartureDate().before(existingFlight.getDepartureDate()) ||
                 existingFlight.getArrivalDate().after(existingFlight.getArrivalDate())) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Dates are wrong!");
         }
 
         existingTrip.getFlightSchedules().add(existingFlight);
         Trip savedTrip = tripRepository.save(existingTrip);
 
+        log.info("Flight added to trip!");
         return tripMapper.tripToDto(savedTrip);
     }
 
@@ -222,12 +243,13 @@ public class TripServiceImpl implements TripService {
             filteredTrips = tripRepository.findByUserId(userId);
         }
 
+        log.info("Trips filtered!");
         return tripMapper.tripToDtoList(filteredTrips);
     }
 
     private void sendTripForAdminApproval(Trip existingTrip, TripStatus status) {
         if (existingTrip.getStatus() == TripStatus.WAITING_FOR_APPROVAL && existingTrip.getStatus() == TripStatus.APPROVED) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("You can no longer ask for approval!");
         } else {
             existingTrip.setStatus(status);
         }
@@ -235,7 +257,7 @@ public class TripServiceImpl implements TripService {
 
     private void approveTrip(Trip existingTrip, TripStatus status) {
         if (existingTrip.getStatus() == TripStatus.CREATED && existingTrip.getStatus() == TripStatus.APPROVED) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("You cannot approve at this stage!");
         }
 
         if (!jwtUtil.loggedUserIsAdmin()) {

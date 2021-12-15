@@ -31,12 +31,6 @@ public class FlightSchedule {
     @Column(name = "arrival_date")
     private Date arrivalDate;
 
-    @Column(name = "departure_time")
-    private Time departureTime;
-
-    @Column(name = "arrival_time")
-    private Time arrivalTime;
-
     @ManyToOne
     @JoinColumn(name = "plane_id", referencedColumnName = "id")
     private Plane plane;

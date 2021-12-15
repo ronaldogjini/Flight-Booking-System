@@ -1,12 +1,15 @@
 package com.ronaldo.tripsuite.service.Impl;
 
 import com.ronaldo.tripsuite.dto.FlightScheduleDto;
+import com.ronaldo.tripsuite.entity.Flight;
 import com.ronaldo.tripsuite.entity.FlightSchedule;
 import com.ronaldo.tripsuite.entity.Plane;
 import com.ronaldo.tripsuite.mapper.FlightScheduleMapper;
 import com.ronaldo.tripsuite.repository.FlightScheduleRepository;
 import com.ronaldo.tripsuite.repository.PlaneRepository;
 import com.ronaldo.tripsuite.service.FlightScheduleService;
+import com.ronaldo.tripsuite.service.FlightService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class FlightScheduleServiceImpl implements FlightScheduleService {
 
     @Autowired
@@ -23,6 +27,9 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
 
     @Autowired
     private PlaneRepository planeRepository;
+
+    @Autowired
+    private FlightService flightService;
 
     @Autowired
     private FlightScheduleMapper flightScheduleMapper;
@@ -39,7 +46,7 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
         List<FlightSchedule> foundFlights;
 
         if (date.isPresent() && date.get().before(currentDate)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("The date cannot be in the past!");
         }
 
         if (departureCity.isPresent() && arrivalCity.isPresent() && date.isPresent()) {
@@ -58,21 +65,22 @@ public class FlightScheduleServiceImpl implements FlightScheduleService {
             foundFlights = flightScheduleRepository.findFlightsAfterCurrentDate(currentDate);
         }
 
+        log.info("Flight schedules filtered!");
         return flightScheduleMapper.flightScheduleToDtoList(foundFlights);
     }
 
     @Override
     public FlightScheduleDto saveFlightSchedule(FlightScheduleDto flightScheduleDto) {
 
-        FlightSchedule newFlightSchedule = flightScheduleMapper.dtoToFlightSchedule(flightScheduleDto);
-        String arrivalTime = newFlightSchedule.getArrivalTime().toString();
-        String departureTime = newFlightSchedule.getArrivalTime().toString();
-        
-        newFlightSchedule.setDepartureTime(Time.valueOf(departureTime));
-        newFlightSchedule.setArrivalTime(Time.valueOf(arrivalTime));
+        Plane foundPlane = planeRepository.findById("B737").get();
+        Flight foundFlight = flightService.findById(flightScheduleDto.getFlightId());
 
-        Plane plane = planeRepository.findById("B737").get();
-        newFlightSchedule.setPlane(plane);
+        FlightSchedule newFlightSchedule = flightScheduleMapper.dtoToFlightSchedule(flightScheduleDto);
+
+        newFlightSchedule.setPlane(foundPlane);
+        newFlightSchedule.setFlight(foundFlight);
+
+        log.info("New flight schedule added!");
 
         return flightScheduleMapper
                 .flightScheduletoDto(flightScheduleRepository

@@ -5,10 +5,12 @@ import com.ronaldo.tripsuite.mapper.RoleMapper;
 import com.ronaldo.tripsuite.repository.RoleRepository;
 import com.ronaldo.tripsuite.entity.Role;
 import com.ronaldo.tripsuite.service.RoleService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class RoleServiceImpl implements RoleService {
 
     @Autowired
@@ -21,7 +23,11 @@ public class RoleServiceImpl implements RoleService {
 
         Role newRole = roleMapper.dtoToRole(roleDto);
         Role savedRole = roleRepository.save(newRole);
+
+        log.info("New role saved!");
         return roleMapper.roleToDto(savedRole);
+
+
     }
 
     public Role getByName(String name) {

@@ -8,6 +8,7 @@ import com.ronaldo.tripsuite.entity.Role;
 import com.ronaldo.tripsuite.entity.User;
 import com.ronaldo.tripsuite.service.RoleService;
 import com.ronaldo.tripsuite.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     @Autowired
@@ -41,6 +43,7 @@ public class UserServiceImpl implements UserService {
         newUser.setPassword(getEncodedPassword(newUser.getPassword()));
         User savedUser = userRepository.save(newUser);
 
+        log.info("New user created");
         return userMapper.userToDto(savedUser);
     }
 
@@ -57,9 +60,8 @@ public class UserServiceImpl implements UserService {
             throw new NoSuchElementException("User does not exist");
         }
 
+        log.info("User fetched by username!");
         return userOptional.get();
-        
-
     }
 
 
